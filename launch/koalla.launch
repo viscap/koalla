@@ -1,0 +1,11 @@
+<launch>
+
+	<arg name="world_name" default="$(find koalla)/worlds/empty.world"/>
+
+	<include file="$(find ardupilot_sitl_gazebo_plugin)/launch/erlecopter_spawn.launch">
+		<arg name="world_name" value="$(arg world_name)"/>
+	</include>
+	
+	<node name="koalla" pkg="koalla" type="koalla" output="screen" />
+
+</launch>
