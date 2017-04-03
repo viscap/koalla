@@ -9,12 +9,19 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   mavros_msgs
+  sensor_msgs
+  dynamic_reconfigure
  )
 
 find_package(OpenCV REQUIRED)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} 
-/usr/local/include/)
+
+####### dynamic reconfigure #######
+###################################
+generate_dynamic_reconfigure_options(
+  cfg/Koalla.cfg
+)
+
 
 #
 ###################################
@@ -27,6 +34,15 @@ catkin_package(
     image_transport
     cv_bridge
     mavros_msgs
+    sensor_msgs
+    dynamic_reconfigure
+)
+
+
+include_directories(
+	include ${catkin_INCLUDE_DIRS} 
+	${OpenCV_INCLUDE_DIRS} 
+	/usr/local/include/
 )
 
 
@@ -34,12 +50,20 @@ catkin_package(
 ## Build ##
 ###########
 
-add_executable(${PROJECT_NAME}
-  src/image_subscriber.cpp
-)
-#
-#
+add_executable(${PROJECT_NAME} src/image_subscriber.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME})
 
 
+add_executable(koalla_old src/image_subscriber_old.cpp)
+target_link_libraries(koalla_old ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(koalla_old ${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
+
+add_executable(camera_driver src/camera_driver.cpp)
+target_link_libraries(camera_driver ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(camera_driver ${PROJECT_NAME})
+
+
+add_executable(koalla_ruan src/image_subscriber_ruan.cpp)
+add_dependencies(koalla_ruan ${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(koalla_ruan ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
