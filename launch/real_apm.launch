@@ -1,5 +1,6 @@
 <launch>
 	
+	<arg name="mostrarimagens" default="0" />
 	<arg name="cam_id" default="0" />
 	<arg name="pluginlists_yaml" default="$(find mavros)/launch/apm_pluginlists.yaml" />
     <arg name="config_yaml" default="$(find mavros)/launch/apm_config.yaml" />
@@ -21,6 +22,7 @@
 	</node>
 	
 	<node name="koalla" pkg="koalla" type="threshold_with_reconfigure" output="screen" >
+		<param name="mostrarimagens" value="$(arg mostrarimagens)" />
 		<param name="limiar" value="127" />
 		<remap from="/erlecopter/front/image_front_raw" to="camera/image"></remap>
 	</node>

@@ -51,7 +51,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     // Variáveis
     Mat image, ImageGrayScale;
     int vTercaParte;
-    int vmostrarimagens = 1; //0=nao 1=sim
+    int vmostrarimagens = 0; //0=nao 1=sim
     int rollAction, pitchAction;
     int quadrante[3] = {0,0,0};
     int areaVANT;

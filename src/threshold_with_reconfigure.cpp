@@ -62,11 +62,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 	// Variáveis
 	Mat image, ImageGrayScale;
     int vTercaParte;
-    int vmostrarimagens = 1; //0=nao 1=sim
+    int vmostrarimagens; //0=nao 1=sim
     int vBlackPixels1 = 0;
 	int vBlackPixels2 = 0;
 	int vBlackPixels3 = 0;
-	int rollAction, pitchAction; 
+	int rollAction, pitchAction;
+	
+	
+	if ( ros::param::get("~mostrarimagens", vmostrarimagens) ) vmostrarimagens = 0;
+	
 	
 	//23/03/17-wander
 	int limiar; // valor limite de cinza. 
