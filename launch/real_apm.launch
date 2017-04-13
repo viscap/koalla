@@ -1,0 +1,28 @@
+<launch>
+	
+	<arg name="cam_id" default="0" />
+	<arg name="pluginlists_yaml" default="$(find mavros)/launch/apm_pluginlists.yaml" />
+    <arg name="config_yaml" default="$(find mavros)/launch/apm_config.yaml" />
+    
+    
+    <node pkg="mavros" type="mavros_node" name="mavros" required="true" clear_params="true" >
+		<param name="fcu_url" value="/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0" />
+		<param name="gcs_url" value="udp://127.0.0.1@127.0.0.1:14550" />
+		<param name="target_system_id" value="1" />
+		<param name="target_component_id" value="1" />
+
+		<!-- load blacklist, config -->
+		<rosparam command="load" file="$(arg pluginlists_yaml)" />
+		<rosparam command="load" file="$(arg config_yaml)" />
+	</node>
+	
+	<node name="camera_driver" pkg="koalla" type="camera_driver" output="screen">
+		<param name="cam_id" value="$(arg cam_id)" />
+	</node>
+	
+	<node name="koalla" pkg="koalla" type="threshold_with_reconfigure" output="screen" >
+		<param name="limiar" value="127" />
+		<remap from="/erlecopter/front/image_front_raw" to="camera/image"></remap>
+	</node>
+	
+</launch>
