@@ -112,6 +112,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
    	    /// Convert image to gray and blur it
 	    cvtColor( image, ImageGrayScale, CV_BGR2GRAY );
+	    /// Blur the image
 	    blur( ImageGrayScale, ImageGrayScale, Size(3,3) );
 
 	    Mat canny_output;
@@ -126,7 +127,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		///are a useful tool for shape analysis and object detection and recognition. 
 		///See squares.cpp in the OpenCV sample directory.
 		//(imgproc.hpp)
-	    findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+	    //===>> findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
 		/// Draw contours
 		Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
@@ -209,6 +210,7 @@ void ShowImage(Mat Source, string WindowName){
 
 //----------------------------------------------------------------------
 void KOALLA(Mat Image){
+	 /// The Koalla Algorithm
 		Mat ImageWithEdge = Image;
 		Mat FinalImage    = Image;
         		
@@ -239,7 +241,7 @@ void KOALLA(Mat Image){
         // DOWN UP
 	    for( x = 0; x < ImageWithEdge.cols; x++ )
         {
-			 y = ImageWithEdge.rows;
+			 y = ImageWithEdge.rows-1;
 			 while (y >=  0 && FinalImage.at<Vec3b>(y,x)[0] == Color) 
 			 {
 				  if (  (FinalImage.at<Vec3b>(y,x)[0] == Color) &&
@@ -275,7 +277,7 @@ void KOALLA(Mat Image){
         // RIGH LEFT
 	    for( y = 0; y < ImageWithEdge.rows; y++ )
         {
-			 x = ImageWithEdge.cols;
+			 x = ImageWithEdge.cols-1;
 			 while (x >=0  && (FinalImage.at<Vec3b>(y,x)[0] == Color || FinalImage.at<Vec3b>(y,x)[0] == Paint))  
 			 {
 				  if (  (FinalImage.at<Vec3b>(y,x)[0] == Color) &&
@@ -291,6 +293,10 @@ void KOALLA(Mat Image){
          }		  
 	     
 	     ShowImage(FinalImage,"Koalla");
+
+        //default is go 
+  		rollAction = 0;
+		pitchAction = 200;
 		        
 		 switch (FreeSide(FinalImage)) {
 		    case -1: {
@@ -301,7 +307,7 @@ void KOALLA(Mat Image){
 			case 0: {
 						printf("\nMover para a esquerda");
 						rollAction = 100;
-						pitchAction = 100;
+						pitchAction = 0;// 100; = 0 MEANS DON'T GO TO FRONT
 					};
             case 1:	{
 						printf("\nMover para frente");
@@ -311,7 +317,7 @@ void KOALLA(Mat Image){
 			case 2: {
                         printf("\nMover para direita");
                         rollAction = -100;
-                        pitchAction = 100;
+                        pitchAction = 0;// 100; = 0 MEANS DON'T GO TO FRONT
                     };
          }          
 }
@@ -360,8 +366,8 @@ int FreeSide(Mat Image){
         ||			 ||           ||           || 
         =========================================
     */
-    // DECIDE PARA ONDE O DRONE DEVE SE MOVER
-	// SUGERE O QUADRANTE DE MENOR OBSTÁCULOS (MENOS PIXELS PRETOS)
+    // DECIDE MORE FREE WAY TO DRONE FLY
+	// (THE BEST WAY IS THE FEWER OBSTACLES AREA (LESS BLACK PIXELS)
 	MaxObstacle = MaxObstacle * Image.rows * Image.cols; 
     int MoreFree = -1;
     for( int i = 0; i <= 2; i++ )

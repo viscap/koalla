@@ -6,6 +6,6 @@
 		<arg name="world_name" value="$(arg world_name)"/>
 	</include>
 	
-	<node name="image_subscriber" pkg="koalla" type="koalla" output="screen" />
+	<node name="koalla" pkg="koalla" type="koalla_icar" output="screen" />
 
 </launch>

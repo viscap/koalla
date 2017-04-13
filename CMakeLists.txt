@@ -50,20 +50,32 @@ include_directories(
 ## Build ##
 ###########
 
-add_executable(${PROJECT_NAME} src/image_subscriber.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
-add_dependencies(${PROJECT_NAME} ${PROJECT_NAME})
+# Versao mais atual do programa
+add_executable(koalla src/koalla.cpp)
+target_link_libraries(koalla ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(koalla ${PROJECT_NAME})
 
+# Versao que foi enviada para o ICAR
+add_executable(koalla_icar src/koalla_icar.cpp)
+target_link_libraries(koalla_icar ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(koalla_icar ${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
 
-add_executable(koalla_old src/image_subscriber_old.cpp)
-target_link_libraries(koalla_old ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
-add_dependencies(koalla_old ${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
+# Versao de backup
+add_executable(koalla_backup src/koalla_backup.cpp)
+target_link_libraries(koalla_backup ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(koalla_backup ${PROJECT_NAME})
 
+# Versao do Ruan com threshold adaptativo
+add_executable(adaptive_threshold src/adaptive_threshold.cpp)
+target_link_libraries(adaptive_threshold ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(adaptive_threshold ${PROJECT_NAME})
+
+# Versao com reconfiguracao dinamica do valor do threshold
+add_executable(threshold_with_reconfigure src/threshold_with_reconfigure.cpp)
+target_link_libraries(threshold_with_reconfigure ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
+add_dependencies(threshold_with_reconfigure ${PROJECT_NAME})
+
+# Driver para comunicar com a camera
 add_executable(camera_driver src/camera_driver.cpp)
 target_link_libraries(camera_driver ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 add_dependencies(camera_driver ${PROJECT_NAME})
-
-
-add_executable(koalla_ruan src/image_subscriber_ruan.cpp)
-add_dependencies(koalla_ruan ${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(koalla_ruan ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )

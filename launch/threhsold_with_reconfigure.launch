@@ -6,6 +6,8 @@
 		<arg name="world_name" value="$(arg world_name)"/>
 	</include>
 	
-	<node name="teste" pkg="koalla" type="teste" output="screen" />
+	<node name="koalla" pkg="koalla" type="threshold_with_reconfigure" output="screen">
+			<param name="limiar" value="127" />
+	</node>
 
 </launch>

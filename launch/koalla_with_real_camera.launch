@@ -1,0 +1,7 @@
+<launch>
+	
+	<node name="koalla" pkg="koalla" type="koalla" output="screen" />
+	
+	<node name="camera_driver" pkg="koalla" type="camera_driver" output="screen" />
+
+</launch>
