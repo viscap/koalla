@@ -1,7 +1,13 @@
 <launch>
+
+	<arg name="cam_id" default="0" />
 	
-	<node name="koalla" pkg="koalla" type="koalla" output="screen" />
+	<node name="camera_driver" pkg="koalla" type="camera_driver" output="screen">
+		<param name="cam_id" value="$(arg cam_id)" />
+	</node>
 	
-	<node name="camera_driver" pkg="koalla" type="camera_driver" output="screen" />
+	<node name="koalla" pkg="koalla" type="koalla_icar" output="screen" >
+			<remap from="/erlecopter/front/image_front_raw" to="camera/image"></remap>
+	</node>
 
 </launch>
