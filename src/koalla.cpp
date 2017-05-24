@@ -19,8 +19,8 @@ Este programa executa as seguintes tarefas:
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <iostream>
-#include <mavros_msgs/OverrideRCIn.h>
-#include <mavros_msgs/State.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <std_msgs/Bool.h>
 //----------------------------------------------------------------------
 //28/03/17
 #include "opencv2/imgproc/imgproc.hpp"
@@ -28,21 +28,13 @@ Este programa executa as seguintes tarefas:
 #include <stdlib.h>
 //----------------------------------------------------------------------
 using namespace cv;
-
-//28/03/17
 using namespace std;
 
-#define FACTOR  0.6
-
-#define MINRC   1100
-#define BASERC  1500
-#define MAXRC   1900
-
-// Subscriber to bottom camera
+// Subscriber to the front camera
 image_transport::Subscriber sub;
 
-// Subscriber to flight mode
-ros::Subscriber mavros_state_sub;
+// Subscriber enable control
+ros::Subscriber enable_control_sub;
 
 // RC publisher
 ros::Publisher pub;
@@ -50,16 +42,14 @@ ros::Publisher pub;
 double Roll, Pitch;
 
 //28/03/17
-int rollAction, pitchAction;
+double velY, velX;
 int thresh = 100;
 int max_thresh = 255;
 RNG rng(12345);
 int Paint = 155;
 
-// Flight mode
-std::string mode;
-bool guided;
-bool armed;
+// Enable control flag
+bool enableControl;
 
 //28/03/17
 int option = 1;
@@ -75,7 +65,7 @@ void KOALLA(Mat Image);
 int FreeSide(Mat Image);
 void ShowImage(Mat Source, string WindowName);
 void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-void mavrosStateCb(const mavros_msgs::StateConstPtr &msg);
+void enableControlCb(const std_msgs::BoolConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -83,8 +73,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
     sub = it.subscribe("/erlecopter/front/image_front_raw", 1, imageCallback);
-    mavros_state_sub = nh.subscribe("/mavros/state", 1, mavrosStateCb);
-    pub = nh.advertise<mavros_msgs::OverrideRCIn>("/mavros/rc/override", 10);
+    enable_control_sub = nh.subscribe("/enable_control", 1, enableControlCb);
+    pub = nh.advertise<geometry_msgs::TwistStamped>("/mavros/setpoint_velocity/cmd_vel", 10);
     
     ros::spin();
     
@@ -104,16 +94,21 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
     try
     {
-        // Get the msg image
+		ROS_INFO_STREAM("\n\nEnable control: " << enableControl << ";");
+		
+		// Get the msg image
         image = cv_bridge::toCvShare(msg, "bgr8")->image;
-        ImageGrayScale = cv_bridge::toCvShare(msg, "mono8")->image;
-        
 	    ShowImage(image,"Camera View");
+      
 
    	    /// Convert image to gray and blur it
-	    cvtColor( ImageGrayScale, ImageGrayScale, CV_BGR2GRAY );
+	    cvtColor( image, ImageGrayScale, CV_BGR2GRAY );
+	    ShowImage(ImageGrayScale, "Gray Scale");
 	    /// Blur the image
 	    blur( ImageGrayScale, ImageGrayScale, Size(3,3) );
+	    ShowImage(ImageGrayScale, "Blur");
+	    
+	    
 
 	    Mat canny_output;
 	    vector<vector<Point> > contours;
@@ -150,46 +145,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         ///=============================================================
         /// Move VANT			    
         ///=============================================================
-        // Create RC msg
-        mavros_msgs::OverrideRCIn msg;
-
-       // Calculate Roll and Pitch depending on the mode
-        if (mode == "LOITER"){
-            Roll = BASERC - rollAction * FACTOR;
-            Pitch = BASERC - pitchAction * FACTOR;
-        }else{
-            Roll = BASERC;
-            Pitch = BASERC;
-        }  
-         
-        // Limit the Roll
-        if (Roll > MAXRC)
+        if ( enableControl == true )
         {
-            Roll = MAXRC;
-        } else if (Roll < MINRC)
-        {
-            Roll = MINRC;
-        }
-
-        // Limit the Pitch
-        if (Pitch > MAXRC)
-        {
-            Pitch = MAXRC;
-        } else if (Pitch < MINRC)
-        {
-            Pitch = MINRC;
-        }
-
-        msg.channels[0] = Roll;     //Roll
-        msg.channels[1] = Pitch;    //Pitch
-        msg.channels[2] = BASERC;   //Throttle
-        msg.channels[3] = 0;        //Yaw
-        msg.channels[4] = 0;
-        msg.channels[5] = 0;
-        msg.channels[6] = 0;
-        msg.channels[7] = 0;
-
-        pub.publish(msg);
+			// Create Twist msg
+			geometry_msgs::TwistStamped msg;
+			
+			msg.header.frame_id = "base_link";
+			msg.twist.linear.x = velY;
+			msg.twist.linear.y = -velX;
+			
+			pub.publish(msg);
+		}
+        
+        
     }
     catch (cv_bridge::Exception& e)
     {
@@ -199,13 +167,13 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 //----------------------------------------------------------------------
 void ShowImage(Mat Source, string WindowName){
-  // Show a Image
-  if (vmostrarimagens==0)
-     return;
-     
-  namedWindow(WindowName, WINDOW_AUTOSIZE );
-  imshow(WindowName, Source);
-  waitKey(0);	
+	// Show a Image
+	if (vmostrarimagens==0)
+		return;
+	 
+	namedWindow(WindowName, WINDOW_AUTOSIZE );
+	imshow(WindowName, Source);
+	waitKey(50);
 }
 
 //----------------------------------------------------------------------
@@ -277,7 +245,7 @@ void KOALLA(Mat Image){
         // RIGH LEFT
 	    for( y = 0; y < ImageWithEdge.rows; y++ )
         {
-			 x = ImageWithEdge.cols-1;
+			 x = ImageWithEdge.cols -1;
 			 while (x >=0  && (FinalImage.at<Vec3b>(y,x)[0] == Color || FinalImage.at<Vec3b>(y,x)[0] == Paint))  
 			 {
 				  if (  (FinalImage.at<Vec3b>(y,x)[0] == Color) &&
@@ -295,29 +263,33 @@ void KOALLA(Mat Image){
 	     ShowImage(FinalImage,"Koalla");
 
         //default is go 
-  		rollAction = 0;
-		pitchAction = 200;
+  		velY = 0;
+		velX = 0.2;
 		        
 		 switch (FreeSide(FinalImage)) {
 		    case -1: {
 						printf("\nParar");
-						rollAction = 0;
-						pitchAction = 0;
+						velY = 0;
+						velX = 0;
+						break;
 					};
 			case 0: {
 						printf("\nMover para a esquerda");
-						rollAction = 100;
-						pitchAction = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+						velY = 0.2;
+						velX = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+						break;
 					};
             case 1:	{
 						printf("\nMover para frente");
-						rollAction = 0;
-						pitchAction = 200;
+						velY = 0;
+						velX = 0.2;
+						break;
 					};
 			case 2: {
                         printf("\nMover para direita");
-                        rollAction = -100;
-                        pitchAction = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+                        velY = -0.2;
+                        velX = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+                        break;
                     };
          }          
 }
@@ -336,8 +308,9 @@ int FreeSide(Mat Image){
 				// abaixo dele apagar o pixel (0-preto)
 
 	int vTercaParte;
+	vTercaParte = Image.cols / 3;
 	int side[3] = {0,0,0};   
-	int MaxObstacle = 80/100;
+	double MaxObstacle = 0.8;
     	
 	// count the almost painted pixels (free space) in each side
 	for( int y = 0; y < Image.rows; y++ )
@@ -345,12 +318,13 @@ int FreeSide(Mat Image){
 	  for( int c = 0; c < 3; c++ )
 	    if (Image.at<Vec3b>(y,x)[0] == Paint) 
 	    {
-			if (x < vTercaParte)
+			if ( x < vTercaParte) 
 			   side[0]++; // Left Side
 			else   
-			if ( (x > vTercaParte) && (x < 2*vTercaParte) )
+			if ( (x >= vTercaParte) && (x < 2*vTercaParte) )
 			   side[1]++; // Center
-			else   
+			else
+			if (x >= 2*vTercaParte) 
 			   side[2]++; // Right Side
 		}
                                        
@@ -378,14 +352,9 @@ int FreeSide(Mat Image){
 }
 
 
-void mavrosStateCb(const mavros_msgs::StateConstPtr &msg)
+void enableControlCb(const std_msgs::BoolConstPtr &msg)
 {
-    if(msg->mode == std::string("CMODE(0)"))
-        return;
-    //ROS_INFO("I heard: [%s] [%d] [%d]", msg->mode.c_str(), msg->armed, msg->guided);
-    mode = msg->mode;
-    guided = msg->guided==128;
-    armed = msg->armed==128;
+    enableControl = msg->data;
 }
 
 /*
