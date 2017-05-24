@@ -51,7 +51,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     // Variáveis
     Mat image, ImageGrayScale;
     int vTercaParte;
-    int vmostrarimagens = 0; //0=nao 1=sim
+    int vmostrarimagens = 1; //0=nao 1=sim
     int rollAction, pitchAction;
     int quadrante[3] = {0,0,0};
     int areaVANT;
@@ -70,17 +70,17 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         //divide the photo by 3 areas (columns)
         vTercaParte   = image.cols / 9;
 
-//        if (vmostrarimagens == 1) {
-//           namedWindow("Source Image", WINDOW_AUTOSIZE );
-//           imshow("Source Image", image);
-//        }   
+        if (vmostrarimagens == 1) {
+           namedWindow("Source Image", WINDOW_AUTOSIZE );
+           imshow("Source Image", image);
+        }   
         // convert the source image to a gray scale image
         //cvtColor(image, ImageGrayScale, CV_BGR2GRAY);
         // show the gray scale image
-//        if (vmostrarimagens == 1) {
-//          namedWindow("gray scale Image", WINDOW_AUTOSIZE );
-//          imshow("gray scale Image", ImageGrayScale);
-//        }  
+        if (vmostrarimagens == 1) {
+          namedWindow("gray scale Image", WINDOW_AUTOSIZE );
+          imshow("gray scale Image", ImageGrayScale);
+        }  
 
         //--------------------------------------------------------------
         //23/03/17-wander
@@ -108,11 +108,11 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
                         ImageGrayScale.at<Vec3b>(y,x)[c] = 255;   
         //--------------------------------------------------------------
         
-//        if (vmostrarimagens == 1)
-//        {
-//            namedWindow("Black and White Full Image", WINDOW_AUTOSIZE );
-//            imshow("Black and White Full Image", ImageGrayScale);
-//        }       
+        if (vmostrarimagens == 1)
+        {
+            namedWindow("Black and White Full Image", WINDOW_AUTOSIZE );
+            imshow("Black and White Full Image", ImageGrayScale);
+        }       
       
         // descobre a quantidade de pixels pretos (obstáculos) em cada quadrante
         for( int y = 0; y < ImageGrayScale.rows; y++ )

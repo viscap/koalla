@@ -111,7 +111,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 	    ShowImage(image,"Camera View");
 
    	    /// Convert image to gray and blur it
-	    cvtColor( ImageGrayScale, ImageGrayScale, CV_BGR2GRAY );
+	    cvtColor( image, ImageGrayScale, CV_BGR2GRAY );
 	    /// Blur the image
 	    blur( ImageGrayScale, ImageGrayScale, Size(3,3) );
 
@@ -127,7 +127,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 		///are a useful tool for shape analysis and object detection and recognition. 
 		///See squares.cpp in the OpenCV sample directory.
 		//(imgproc.hpp)
-	    findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+	    //===>> findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
 		/// Draw contours
 		Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
