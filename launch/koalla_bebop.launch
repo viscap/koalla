@@ -1,8 +1,10 @@
 <launch>
 	
+	<include file="$(find bebop_driver)/launch/bebop_node.launch" />
+	
 	<node name="koalla" pkg="koalla" type="koalla" output="screen" >
-		<remap from="/erlecopter/front/image_front_raw" to="image_raw"></remap>
-		<remap from="koalla/cmd_vel" to="cmd_vel"></remap>
+		<remap from="/erlecopter/front/image_front_raw" to="/bebop/image_raw"></remap>
+		<remap from="koalla/cmd_vel" to="/bebop/cmd_vel"></remap>
 	</node>
 
 </launch>
