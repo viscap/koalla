@@ -7,7 +7,7 @@
 	</include>
 	
 	<node name="koalla" pkg="koalla" type="threshold_with_reconfigure" output="screen">
-			<param name="limiar" value="127" />
+		<param name="limiar" value="127" />
 	</node>
 
 </launch>

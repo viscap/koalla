@@ -6,10 +6,12 @@ project(koalla)
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  mavros_msgs
   image_transport
   cv_bridge
-  mavros_msgs
-  sensor_msgs
   dynamic_reconfigure
  )
 
@@ -30,12 +32,14 @@ generate_dynamic_reconfigure_options(
 
 catkin_package(
   CATKIN_DEPENDS
-    roscpp
-    image_transport
-    cv_bridge
-    mavros_msgs
-    sensor_msgs
-    dynamic_reconfigure
+  roscpp
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  mavros_msgs
+  image_transport
+  cv_bridge
+  dynamic_reconfigure
 )
 
 
@@ -59,11 +63,6 @@ add_dependencies(koalla ${PROJECT_NAME})
 add_executable(koalla_icar src/koalla_icar.cpp)
 target_link_libraries(koalla_icar ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
 add_dependencies(koalla_icar ${PROJECT_NAME} ${PROJECT_NAME}_gencfg)
-
-# Versao de backup
-add_executable(koalla_backup src/koalla_backup.cpp)
-target_link_libraries(koalla_backup ${catkin_LIBRARIES} 	${GAZEBO_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} )
-add_dependencies(koalla_backup ${PROJECT_NAME})
 
 # Versao do Ruan com threshold adaptativo
 add_executable(adaptive_threshold src/adaptive_threshold.cpp)

@@ -12,34 +12,29 @@ Este programa executa as seguintes tarefas:
     5) identifica o quadrante com maior número de pixels brancos
     6) envia comandos ao DRONE para se dirigir a este quadrante
 ***********************************************************************/
-// g++ -o ex16 ex16.cpp $(pkg-config opencv --cflags --libs)	
+// g++ -o ex16 ex16.cpp $(pkg-config opencv --cflags --libs)
 
+#include <stdio.h>
+#include <stdlib.h>	
+#include <iostream>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
-#include <iostream>
+#include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Bool.h>
-//----------------------------------------------------------------------
-//28/03/17
-#include "opencv2/imgproc/imgproc.hpp"
-#include <stdio.h>
-#include <stdlib.h>
+
 //----------------------------------------------------------------------
 using namespace cv;
 using namespace std;
 
-// Subscriber to the front camera
-image_transport::Subscriber sub;
-
-// Subscriber enable control
-ros::Subscriber enable_control_sub;
-
-// RC publisher
-ros::Publisher pub;
-
-double Roll, Pitch;
+// ROS Objects
+image_transport::Subscriber image_sub;  // Subscriber to the front camera
+ros::Subscriber enable_control_sub; 	// Subscriber to enable control
+ros::Publisher cmd_vel_pub; 			// Publishes geometry_msgs/Twist messages
+ros::Publisher cmd_vel_stamped_pub;     // Publishes geometry_msgs/TwistStamped messages
 
 //28/03/17
 double velY, velX;
@@ -69,12 +64,13 @@ void enableControlCb(const std_msgs::BoolConstPtr &msg);
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "image_listener");
+    ros::init(argc, argv, "koalla");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    sub = it.subscribe("/erlecopter/front/image_front_raw", 1, imageCallback);
-    enable_control_sub = nh.subscribe("/enable_control", 1, enableControlCb);
-    pub = nh.advertise<geometry_msgs::TwistStamped>("/mavros/setpoint_velocity/cmd_vel", 10);
+    image_sub = it.subscribe("/erlecopter/front/image_front_raw", 1, imageCallback);
+    enable_control_sub = nh.subscribe("koalla/enable_control", 1, enableControlCb);
+    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("koalla/cmd_vel", 10);
+    cmd_vel_stamped_pub = nh.advertise<geometry_msgs::TwistStamped>("/mavros/setpoint_velocity/cmd_vel", 10);
     
     ros::spin();
     
@@ -148,13 +144,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         if ( enableControl == true )
         {
 			// Create Twist msg
-			geometry_msgs::TwistStamped msg;
+			geometry_msgs::Twist twist;
+			twist.linear.x = velX;
+			twist.linear.y = velY;
 			
-			msg.header.frame_id = "base_link";
-			msg.twist.linear.x = velY;
-			msg.twist.linear.y = -velX;
+			// Create a TwistStamped msg
+			geometry_msgs::TwistStamped twistStamped;
+			twistStamped.header.frame_id = "base_link";
+			twistStamped.twist.linear.x = velY;
+			twistStamped.twist.linear.y = -velX;
 			
-			pub.publish(msg);
+			// Publish the two messages
+			cmd_vel_pub.publish(twist);
+			cmd_vel_stamped_pub.publish(twistStamped);
 		}
         
         

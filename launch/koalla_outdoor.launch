@@ -1,0 +1,7 @@
+<launch>
+	
+	<include file="$(find koalla)/launch/koalla_gazebo.launch">
+		<arg name="world_name" value="$(find koalla)/worlds/outdoor_village.world"/>
+	</include>
+
+</launch>
