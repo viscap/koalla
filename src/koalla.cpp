@@ -103,9 +103,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 	    /// Blur the image
 	    blur( ImageGrayScale, ImageGrayScale, Size(3,3) );
 	    ShowImage(ImageGrayScale, "Blur");
-	    
-	    
-
+	      
 	    Mat canny_output;
 	    vector<vector<Point> > contours;
 	    vector<Vec4i> hierarchy;
@@ -277,20 +275,20 @@ void KOALLA(Mat Image){
 					};
 			case 0: {
 						printf("\nMover para a esquerda");
-						velY = 0.2;
-						velX = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+						velY = 0.5;
+						velX = 100; //= 0 MEANS DON'T GO TO FRONT
 						break;
 					};
             case 1:	{
 						printf("\nMover para frente");
 						velY = 0;
-						velX = 0.2;
+						velX = 0.8;
 						break;
 					};
 			case 2: {
                         printf("\nMover para direita");
-                        velY = -0.2;
-                        velX = 0;// 100; = 0 MEANS DON'T GO TO FRONT
+                        velY = -0.8;
+                        velX = 100; //= 0 MEANS DON'T GO TO FRONT
                         break;
                     };
          }          
