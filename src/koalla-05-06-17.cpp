@@ -312,9 +312,8 @@ int FreeSide(Mat Image){
 	int vTercaParte;
 	vTercaParte = Image.cols / 3;
 	int side[3] = {0,0,0};   
-	double MaxObstacle = 0; //0.8;
-	double FreePercent = 1.2;
-	    	
+	double MaxObstacle = 0.8;
+    	
 	// count the almost painted pixels (free space) in each side
 	for( int y = 0; y < Image.rows; y++ )
 	 for( int x = 0; x < Image.cols; x++ )
@@ -348,7 +347,7 @@ int FreeSide(Mat Image){
 	MaxObstacle = MaxObstacle * Image.rows * Image.cols; 
     int MoreFree = -1;
     for( int i = 0; i <= 2; i++ )
-      if ((side[i] > FreePercent * MoreFree) && (side[i] > MaxObstacle))
+      if ((side[i] > MoreFree) && (side[i] > MaxObstacle))
 		 MoreFree = i;
 		 
 	return MoreFree;
